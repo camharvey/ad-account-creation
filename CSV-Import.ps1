@@ -1,8 +1,10 @@
 Import-Module ActiveDirectory
 
 #Enter a path to your import CSV file
-$ADUsers = Import-CSV #"Enter CSV file path here"
+$ADUsers = Import-CSV C:\Users\charvey\Desktop\user_import.csv
 
+
+#Create User Accounts from CSV file
 foreach ($User in $ADUsers)
 {
     $Username = $User.username
@@ -20,20 +22,29 @@ foreach ($User in $ADUsers)
     else
     {
         #User doesn't exist, create a new user account
-        #Account will be created in the OU listed in the $OU variable in the CSV file; don’t forget to change the domain name in the"-UserPrincipalName" variable
+        #Account will be created in the OU listed in the $OU variable in the CSV file; edit domain name in "-UserPrincipalName" and address in "-EmailAddress"
         New-ADUser `
         -SamAccountName $Username `
         -UserPrincipalName "$Username@sl.lan" `
-        -Name "$Firstname $Lastname" `
         -GivenName $Firstname `
         -Surname $Lastname `
         -Enabled $True `
         -ChangePasswordAtLogon $True `
-        -DisplayName "$Firstname $Lastname" -Name "$Firstname $Lastname" ` 
-        -EmailAddress "$Username@securelink.com"
-        -Path $OU
+        -DisplayName "$Firstname $Lastname" -Name "$Firstname $Lastname" `
+        -EmailAddress "$Username@securelink.com" `
+        -Path $OU `
         -AccountPassword (convertto-securestring $Password -AsPlainText -Force)
+        #Add User to groups
+        $Groups = @("SambaUsers","Austin","confluence-users","Google Apps","jira-users","Nexmark" )
+        foreach ($Group in $Groups) { Add-ADPrincipalGroupMembership $Username -MemberOf $Group }
     }
 }
 
+#Assign SambaUsers as Primary Group
+$group = Get-ADGroup "SambaUsers"
+$groupSid = $group.sid
+$groupSid
+[int]$GroupID = $groupSid.Value.Substring($groupSid.Value.LastIndexOf("-")+1)
 
+foreach ($User in $ADUsers)
+{ Set-ADUser $User.username -Replace @{primaryGroupID="$GroupID"} }
