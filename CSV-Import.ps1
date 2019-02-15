@@ -3,7 +3,7 @@ Import-Module ActiveDirectory
 #Enter a path to your import CSV file
 $ADUsers = Import-CSV C:\Users\charvey\Desktop\user_import.csv
 
-
+Write-Host -ForegroundColor Green "Creating new users from import file"
 #Create User Accounts from CSV file
 foreach ($User in $ADUsers)
 {
@@ -12,6 +12,8 @@ foreach ($User in $ADUsers)
     $Firstname = $User.firstname
     $Lastname = $User.lastname
     $OU = $User.ou
+    $CardNumber = $User.cardnumber
+    $CardPIN = $User.cardpin
 
     #Check if user account already exists in AD
     if (Get-ADUser -F {SamAccountName -eq $Username})
@@ -37,6 +39,9 @@ foreach ($User in $ADUsers)
         #Add User to groups
         $Groups = @("SambaUsers","Austin","confluence-users","Google Apps","jira-users","Nexmark" )
         foreach ($Group in $Groups) { Add-ADPrincipalGroupMembership $Username -MemberOf $Group }
+        #Assign Access Card and Access PIN to User
+        Set-ADUser -Identity $Username -Add @{gtecFacilityCode=105; gtecAccessCard="$CardNumber"; gtecAccessPin="$CardPIN"}
+        Write-Host -ForegroundColor Green "User '$Firstname $Lastname' successfully created with username '$Username'"
     }
 }
 
