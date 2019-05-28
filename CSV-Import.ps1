@@ -14,6 +14,9 @@ foreach ($User in $ADUsers)
     $OU = $User.ou
     $CardNumber = $User.cardnumber
     $CardPIN = $User.cardpin
+    $PrimaryGroup = Get-ADGroup "SambaUsers"
+    $groupSid = $PrimaryGroup.sid
+    [int]$GroupID = $groupSid.Value.Substring($groupSid.Value.LastIndexOf("-")+1)
 
     #Check if user account already exists in AD
     if (Get-ADUser -F {SamAccountName -eq $Username})
@@ -25,6 +28,7 @@ foreach ($User in $ADUsers)
     {
         #User doesn't exist, create a new user account
         #Account will be created in the OU listed in the $OU variable in the CSV file; edit domain name in "-UserPrincipalName" and address in "-EmailAddress"
+        Write-Verbose "Now creating new user account: '$Username'" -Verbose
         New-ADUser `
         -SamAccountName $Username `
         -UserPrincipalName "$Username@sl.lan" `
@@ -39,17 +43,18 @@ foreach ($User in $ADUsers)
         #Add User to groups
         $Groups = @("SambaUsers","Austin","confluence-users","Google Apps","jira-users","Nexmark" )
         foreach ($Group in $Groups) { Add-ADPrincipalGroupMembership $Username -MemberOf $Group }
-        #Assign Access Card and Access PIN to User
-        Set-ADUser -Identity $Username -Add @{gtecFacilityCode=105; gtecAccessCard="$CardNumber"; gtecAccessPin="$CardPIN"}
-        Write-Host -ForegroundColor Green "User '$Firstname $Lastname' successfully created with username '$Username'"
+        #Assign Access Card, Access PIN to User, and "SambaUsers" as Primary Group
+        Set-ADUser -Identity $Username -Add @{gtecFacilityCode=105; gtecAccessCard="$CardNumber"; gtecAccessPin="$CardPIN"} `
+        -Replace @{primaryGroupID="$GroupID"}
+        Write-Verbose "User '$Firstname $Lastname' successfully created with username '$Username'" -Verbose
     }
 }
 
-#Assign SambaUsers as Primary Group
+<#Assign SambaUsers as Primary Group
 $group = Get-ADGroup "SambaUsers"
 $groupSid = $group.sid
 $groupSid
 [int]$GroupID = $groupSid.Value.Substring($groupSid.Value.LastIndexOf("-")+1)
 
 foreach ($User in $ADUsers)
-{ Set-ADUser $User.username -Replace @{primaryGroupID="$GroupID"} }
+{ Set-ADUser $User.username -Replace @{primaryGroupID="$GroupID"} } #>
