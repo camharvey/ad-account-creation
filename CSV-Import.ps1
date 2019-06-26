@@ -49,12 +49,3 @@ foreach ($User in $ADUsers)
         Write-Verbose "User '$Firstname $Lastname' successfully created with username '$Username'" -Verbose
     }
 }
-
-<#Assign SambaUsers as Primary Group
-$group = Get-ADGroup "SambaUsers"
-$groupSid = $group.sid
-$groupSid
-[int]$GroupID = $groupSid.Value.Substring($groupSid.Value.LastIndexOf("-")+1)
-
-foreach ($User in $ADUsers)
-{ Set-ADUser $User.username -Replace @{primaryGroupID="$GroupID"} } #>
