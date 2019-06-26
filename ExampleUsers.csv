@@ -1,0 +1,3 @@
+﻿firstname,lastname,username,password,ou,cardnumber,cardpin
+John,Doe,jdoe,P@ssw0rd,"OU=Corporate Accounts,OU=Users,DC=example,DC=com",175,21905
+Jane,Smith,jsmith,P@ssw0rd,"OU=Corporate Accounts,OU=Users,DC=example,DC=com",176,92674
