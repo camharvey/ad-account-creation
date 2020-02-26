@@ -1,7 +1,13 @@
 Import-Module ActiveDirectory
+Add-Type -AssemblyName System.Windows.Forms
 
-#Enter a path to your import CSV file
-$ADUsers = Import-CSV C:\Users\charvey\Desktop\user_import.csv
+Write-Host "Please select the user CSV file to import"
+$FileBrowser = New-Object System.Windows.Forms.OpenFileDialog -Property @{
+    InitialDirectory = [Environment]::GetFolderPath('Desktop')
+    Filter = "CSV Files (*.csv)|*.csv"
+}
+$null = $FileBrowser.ShowDialog()
+$ADUsers = Import-CSV $FileBrowser.FileName
 
 Write-Host -ForegroundColor Green "Creating new users from import file"
 #Create User Accounts from CSV file
