@@ -1,4 +1,4 @@
-AD Account Creation
+CSV-Import.ps1
 ========
 
 This script creates new users in Active Directory by iterating through a CSV file with user information that will be filled in for that user. ExampleUsers.csv provides a basic framework for creating a CSV file to use.
